@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Cyber War - Big Data</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>⚔️ CYBER WAR - Big Data</h1>
+
+<div id="entry">
+  <input id="username" placeholder="Nome de usuário (vazio = observador)">
+  <button id="join">Entrar</button>
+</div>
+
+<div id="role"></div>
+<div id="status"></div>
+
+<canvas id="battle" width="800" height="400"></canvas>
+
+<div id="ranking">
+  <h2>🏆 Ranking</h2>
+  <h3>Defesa</h3>
+  <ol id="rankDefense"></ol>
+  <h3>Hackers</h3>
+  <ol id="rankHackers"></ol>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
