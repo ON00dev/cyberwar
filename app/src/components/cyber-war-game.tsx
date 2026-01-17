@@ -37,7 +37,7 @@ export interface Player {
 
 const GAME_DURATION = 90
 const ROOM_ID = "5123"
-const SERVER_URL = "http://localhost:3000"
+const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? "http://localhost:3000"
 
 export function CyberWarGame() {
   const [isConnected, setIsConnected] = useState(false)
