@@ -9,7 +9,8 @@ const io = new Server(server, {
   cors: { origin: "*" }
 });
 
-app.use(express.static(path.join(__dirname, "../public")));
+const CLIENT_BUILD_PATH = path.join(__dirname, "../app/dist");
+app.use(express.static(CLIENT_BUILD_PATH));
 
 const ROOM_ID = "5123";
 const MAX_PLAYERS = 10;
@@ -25,6 +26,10 @@ const rooms = {
     spawnTimeout: null
   }
 };
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(CLIENT_BUILD_PATH, "index.html"));
+});
 
 // ---------------- SOCKET.IO ----------------
 io.on("connection", socket => {
