@@ -7,6 +7,8 @@ import { RankingPanel } from "./ranking-panel"
 import { EntryModal } from "./entry-modal"
 import { StatusBar } from "./status-bar"
 import { GameOverModal } from "./game-over-modal"
+import { QuestionModal } from "./question-modal"
+import { questions, type Question } from "../data/questions"
 import { Shield, Skull, Eye } from "lucide-react"
 
 export type Role = "defesa" | "hacker" | "observer" | null
@@ -27,6 +29,7 @@ export interface DataItem {
   type: DataType
   captured: boolean
   capturedBy?: string
+  speed?: number
 }
 
 export interface Player {
@@ -35,7 +38,7 @@ export interface Player {
   score: number
 }
 
-const GAME_DURATION = 90
+const GAME_DURATION = 120
 const ROOM_ID = "5123"
 const SERVER_URL =
   import.meta.env.VITE_SERVER_URL ||
@@ -46,39 +49,40 @@ export function CyberWarGame() {
   const [username, setUsername] = useState("")
   const [role, setRole] = useState<Role>(null)
   const roleRef = useRef<Role>(null)
+  const usernameRef = useRef("")
   const [status, setStatus] = useState("AGUARDANDO CONEXÃO...")
   const [dataItems, setDataItems] = useState<DataItem[]>([])
   const [players, setPlayers] = useState<Player[]>([])
   const [showEntry, setShowEntry] = useState(true)
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION)
   const [isGameOver, setIsGameOver] = useState(false)
-  const [socket, setSocket] = useState<Socket | null>(null)
+  const [socket] = useState<Socket | null>(() => io(SERVER_URL))
   const [phase, setPhase] = useState<GamePhase>("idle")
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null)
   const gameLoopRef = useRef<number | null>(null)
+  const lastUpdateRef = useRef<number | null>(null)
+  
+  // Quiz state
+  const [activeQuestion, setActiveQuestion] = useState<Question | null>(null)
+  const [pendingDataId, setPendingDataId] = useState<string | null>(null)
 
   useEffect(() => {
-    const newSocket = io(SERVER_URL)
-    setSocket(newSocket)
+    if (!socket) return
 
-    newSocket.on("connect", () => {
-      // Connection established
-    })
-
-    newSocket.on("room-info", (info: RoomInfo) => {
+    socket.on("room-info", (info: RoomInfo) => {
       setRoomInfo(info)
     })
 
-    newSocket.on("disconnect", () => {
+    socket.on("disconnect", () => {
       setIsConnected(false)
       setStatus("CONEXÃO PERDIDA")
       setPhase("disconnected")
     })
 
     return () => {
-      newSocket.disconnect()
+      socket.disconnect()
     }
-  }, [])
+  }, [socket])
 
   const endGame = useCallback(() => {
     setIsGameOver(true)
@@ -123,6 +127,7 @@ export function CyberWarGame() {
       const finalRole: Role = name.trim() === "" ? "observer" : selectedRole
 
       setUsername(finalUsername)
+      usernameRef.current = finalUsername
       setShowEntry(false)
       setStatus("CONECTANDO À SALA...")
       setIsGameOver(false)
@@ -148,7 +153,13 @@ export function CyberWarGame() {
       })
 
       socket.on("new-data", (data: DataItem) => {
-        setDataItems((prev) => [...prev, data])
+        // Revert speed to slower pace (2-4) -> Adjusted to 4-6 based on user feedback "speed not high"
+        const speed = Math.random() * 2 + 4
+        setDataItems((prev) => [...prev, { ...data, speed }])
+      })
+
+      socket.on("data-locked", ({ id }: { id: string }) => {
+        setDataItems((prev) => prev.filter((item) => item.id !== id))
       })
 
       socket.on(
@@ -157,6 +168,12 @@ export function CyberWarGame() {
           setDataItems((prev) =>
             prev.map((item) => (item.id === data.id ? { ...item, ...data } : item)),
           )
+
+          if (data.capturedBy === usernameRef.current) {
+            if (typeof window !== "undefined" && "vibrate" in navigator) {
+              navigator.vibrate(50)
+            }
+          }
         },
       )
 
@@ -216,32 +233,67 @@ export function CyberWarGame() {
     (dataId: string) => {
       if (!socket || !role || role === "observer" || isGameOver) return
 
-      socket.emit("click-data", { dataId })
+      // Try multiple vibration patterns for better compatibility
+      if (typeof window !== "undefined" && "vibrate" in navigator) {
+        try {
+          // Some browsers prefer a single number, others an array
+          const vibrated = navigator.vibrate(50)
+          if (!vibrated) {
+            navigator.vibrate([50])
+          }
+        } catch {
+          // ignore error
+        }
+      }
+
+      socket.emit("lock-data", { dataId })
+
+      // Instead of emitting immediately, open quiz modal
+      const randomQuestion = questions[Math.floor(Math.random() * questions.length)]
+      setActiveQuestion(randomQuestion)
+      setPendingDataId(dataId)
+      
+      // Mark item as "being captured" locally to give feedback?
+      // For now we just open modal.
     },
     [socket, role, isGameOver],
   )
 
-  useEffect(() => {
-    return () => {
-      if (socket) {
-        socket.disconnect()
-      }
+  const handleQuizAnswer = (correct: boolean) => {
+    setActiveQuestion(null)
+    
+    if (correct && pendingDataId && socket) {
+      socket.emit("click-data", { dataId: pendingDataId })
+      
+      // Feedback visual extra se necessário
+    } else {
+      // Feedback de erro (opcional)
     }
-  }, [socket])
+    setPendingDataId(null)
+  }
 
-  // Game loop for falling data
   useEffect(() => {
     if (!isConnected || isGameOver) return
 
     const gameLoop = () => {
-      setDataItems((prev) =>
-        prev
-          .map((item) => ({
-            ...item,
-            y: item.captured ? item.y : item.y + 2,
-          }))
-          .filter((item) => item.y < 500 || item.captured),
-      )
+      const now = performance.now()
+      if (lastUpdateRef.current === null) {
+        lastUpdateRef.current = now
+      }
+      const delta = now - lastUpdateRef.current
+
+      if (delta >= 50) {
+        lastUpdateRef.current = now
+        setDataItems((prev) =>
+          prev
+            .map((item) => ({
+              ...item,
+              y: item.id === pendingDataId ? item.y : item.captured ? item.y + 5 : item.y + (item.speed || 3),
+            }))
+            .filter((item) => item.y < 500 || item.id === pendingDataId),
+        )
+      }
+
       gameLoopRef.current = requestAnimationFrame(gameLoop)
     }
 
@@ -250,7 +302,7 @@ export function CyberWarGame() {
     return () => {
       if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current)
     }
-  }, [isConnected, isGameOver])
+  }, [isConnected, isGameOver, pendingDataId])
 
   const getRoleIcon = () => {
     switch (role) {
@@ -277,7 +329,19 @@ export function CyberWarGame() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div
+      className="relative min-h-screen overflow-hidden select-none"
+      onCopy={(e) => e.preventDefault()}
+    >
+      {activeQuestion && (
+        <QuestionModal
+          key={activeQuestion.id}
+          question={activeQuestion}
+          onAnswer={handleQuizAnswer}
+          onTimeout={() => handleQuizAnswer(false)}
+        />
+      )}
+      
       {/* Animated background grid */}
       <div className="fixed inset-0 bg-[linear-gradient(rgba(0,255,213,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,213,0.03)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none" />
 
@@ -319,6 +383,7 @@ export function CyberWarGame() {
           isGameOver={isGameOver}
           phase={phase}
           playersCount={roomInfo?.playersCount ?? 0}
+          maxPlayers={roomInfo?.maxPlayers ?? 20}
         />
 
         {/* Main Game Area */}
@@ -330,7 +395,7 @@ export function CyberWarGame() {
 
           {/* Ranking Panel */}
           <div className="lg:col-span-1">
-            <RankingPanel players={players} />
+            <RankingPanel players={players} currentRole={role} />
           </div>
         </div>
 

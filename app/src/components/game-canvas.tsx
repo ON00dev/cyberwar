@@ -32,40 +32,15 @@ export function GameCanvas({ dataItems, onDataClick, role }: GameCanvasProps) {
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+    
+    ctx.shadowBlur = 0
 
-    // Draw grid background
-    ctx.strokeStyle = "rgba(0, 255, 213, 0.05)"
-    ctx.lineWidth = 1
-    for (let x = 0; x < canvas.width; x += 40) {
-      ctx.beginPath()
-      ctx.moveTo(x, 0)
-      ctx.lineTo(x, canvas.height)
-      ctx.stroke()
-    }
-    for (let y = 0; y < canvas.height; y += 40) {
-      ctx.beginPath()
-      ctx.moveTo(0, y)
-      ctx.lineTo(canvas.width, y)
-      ctx.stroke()
-    }
-
-    // Draw scan lines
-    const scanLineY = (Date.now() / 20) % canvas.height
-    ctx.strokeStyle = "rgba(0, 255, 213, 0.1)"
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.moveTo(0, scanLineY)
-    ctx.lineTo(canvas.width, scanLineY)
-    ctx.stroke()
-
-    // Draw data items
     dataItems.forEach((item) => {
       if (item.captured) return
 
       const color = getTypeColor(item.type)
-      const size = 24
+      const size = 64 // Further increased size for mobile
 
       // Glow effect
       ctx.shadowColor = color
@@ -100,7 +75,7 @@ export function GameCanvas({ dataItems, onDataClick, role }: GameCanvasProps) {
 
       // Type indicator
       ctx.fillStyle = "#fff"
-      ctx.font = "bold 10px monospace"
+      ctx.font = "bold 16px monospace" // Increased font size
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
       const label = item.type === "critico" ? "!" : item.type === "confidencial" ? "?" : "•"
@@ -112,11 +87,13 @@ export function GameCanvas({ dataItems, onDataClick, role }: GameCanvasProps) {
   }, [dataItems])
 
   useEffect(() => {
-    const animationFrame = requestAnimationFrame(function animate() {
+    let frameId: number
+    const loop = () => {
       draw()
-      requestAnimationFrame(animate)
-    })
-    return () => cancelAnimationFrame(animationFrame)
+      frameId = requestAnimationFrame(loop)
+    }
+    frameId = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(frameId)
   }, [draw])
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -131,8 +108,10 @@ export function GameCanvas({ dataItems, onDataClick, role }: GameCanvasProps) {
     const mx = (e.clientX - rect.left) * scaleX
     const my = (e.clientY - rect.top) * scaleY
 
+    const size = 64 // Match the size in draw function
+
     dataItems.forEach((item) => {
-      if (!item.captured && mx > item.x && mx < item.x + 24 && my > item.y && my < item.y + 24) {
+      if (!item.captured && mx > item.x && mx < item.x + size && my > item.y && my < item.y + size) {
         onDataClick(item.id)
       }
     })
@@ -155,8 +134,8 @@ export function GameCanvas({ dataItems, onDataClick, role }: GameCanvasProps) {
         <div className="relative bg-[#050a12]">
           <canvas
             ref={canvasRef}
-            width={800}
-            height={400}
+            width={900}
+            height={500}
             onClick={handleClick}
             className={`w-full h-auto ${role && role !== "observer" ? "cursor-crosshair" : "cursor-default"}`}
           />
@@ -166,6 +145,7 @@ export function GameCanvas({ dataItems, onDataClick, role }: GameCanvasProps) {
           <div className="absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 border-primary/50" />
           <div className="absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 border-primary/50" />
           <div className="absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 border-primary/50" />
+
         </div>
       </div>
     </div>

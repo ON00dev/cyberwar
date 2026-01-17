@@ -13,8 +13,8 @@ const CLIENT_BUILD_PATH = path.join(__dirname, "../app/dist");
 app.use(express.static(CLIENT_BUILD_PATH));
 
 const ROOM_ID = "5123";
-const MAX_PLAYERS = 10;
-const GAME_DURATION = 90;
+const MAX_PLAYERS = 20; // Aumentado para suportar mais conexões em simulações
+const GAME_DURATION = 120; // 2 minutos em segundos
 const rooms = {
   [ROOM_ID]: {
     players: [],
@@ -55,11 +55,11 @@ io.on("connection", socket => {
     const defenders = room.players.filter(p => p.role === "defesa").length;
     const hackers = room.players.filter(p => p.role === "hacker").length;
 
-    if (role === "defesa" && defenders >= 5) {
+    if (role === "defesa" && defenders >= 10) {
       socket.emit("error", "Equipe de Defesa cheia!");
       return;
     }
-    if (role === "hacker" && hackers >= 5) {
+    if (role === "hacker" && hackers >= 10) {
       socket.emit("error", "Equipe Hacker cheia!");
       return;
     }
@@ -74,19 +74,18 @@ io.on("connection", socket => {
     socket.username = username;
     socket.role = role;
     room.players.push(socket);
-    console.log(`[PLAYER] ${username} entrou como ${role} (${room.players.length}/10)`);
+    console.log(
+      `[PLAYER] ${username} entrou como ${role} (${room.players.length}/${MAX_PLAYERS})`,
+    );
     
     // Confirma role
     socket.emit("role-assigned", role);
 
     updateRoom();
 
-    // Verifica se pode começar (5 vs 5)
-    const currentDefenders = room.players.filter(p => p.role === "defesa").length;
-    const currentHackers = room.players.filter(p => p.role === "hacker").length;
-
-    if (currentDefenders === 5 && currentHackers === 5) {
-      console.log("🚀 Sala cheia (5v5)! Iniciando partida");
+    // Verifica se pode começar (apenas quando sala cheia - 20 jogadores)
+    if (room.players.length >= MAX_PLAYERS) {
+      console.log("🚀 Sala cheia (20 jogadores)! Iniciando partida");
       startGame();
     }
   });
@@ -110,9 +109,10 @@ io.on("connection", socket => {
     if (!room || !room.gameActive) return;
 
     const item = room.dataItems.find(d => d.id === dataId);
-    if (!item || item.captured) return;
+    if (!item || item.captured || (item.lockedBy && item.lockedBy !== socket.id)) return;
 
     item.captured = true;
+    item.lockedBy = null;
     item.capturedBy = socket.username;
 
     let points = 1;
@@ -138,6 +138,20 @@ io.on("connection", socket => {
     });
 
     updateRoom();
+  });
+
+  socket.on("lock-data", ({ dataId }) => {
+    const room = rooms[ROOM_ID];
+    if (!room || !room.gameActive) return;
+
+    const item = room.dataItems.find(d => d.id === dataId);
+    if (!item || item.captured || item.lockedBy) return;
+
+    item.lockedBy = socket.id;
+
+    broadcast("data-locked", {
+      id: item.id
+    });
   });
 
   socket.on("disconnect", () => {
@@ -214,32 +228,54 @@ function spawnData() {
   const room = rooms[ROOM_ID];
   if (!room || !room.gameActive) return;
 
-  const types = ["critico", "confidencial", "normal"];
-  const weights = [0.15, 0.35, 0.5];
-  const random = Math.random();
-  let type = "normal";
-  let cumulative = 0;
-  for (let i = 0; i < weights.length; i++) {
-    cumulative += weights[i];
-    if (random < cumulative) {
-      type = types[i];
-      break;
+  const activePlayers = room.players.length || 1;
+  const spawnCount = Math.min(4, Math.max(1, Math.ceil(activePlayers / 5))); // Até 4 dados por ciclo com 20 jogadores
+
+  for (let s = 0; s < spawnCount; s++) {
+    const types = ["critico", "confidencial", "normal"];
+    const weights = [0.15, 0.35, 0.5];
+    const random = Math.random();
+    let type = "normal";
+    let cumulative = 0;
+    for (let i = 0; i < weights.length; i++) {
+      cumulative += weights[i];
+      if (random < cumulative) {
+        type = types[i];
+        break;
+      }
     }
+
+    const minDistance = 80; // Distância mínima para evitar sobreposição
+    let x = 0;
+    let attempts = 0;
+    const recentItems = room.dataItems
+      .slice(-8)
+      .filter(i => !i.captured && !i.lockedBy);
+
+    do {
+      x = Math.random() * 760 + 20;
+      const conflict = recentItems.some(item => Math.abs(item.x - x) < minDistance);
+      if (!conflict) break;
+      attempts++;
+    } while (attempts < 10);
+
+    const dataItem = {
+      id: "data-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9),
+      x,
+      y: -30,
+      type,
+      captured: false,
+      lockedBy: null
+    };
+
+    room.dataItems.push(dataItem);
+    broadcast("new-data", dataItem);
   }
 
-  const dataItem = {
-    id: "data-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9),
-    x: Math.random() * 760 + 20,
-    y: -30,
-    type,
-    captured: false
-  };
-
-  room.dataItems.push(dataItem);
-  broadcast("new-data", dataItem);
-
   if (room.players.length > 0 && room.timeLeft > 0) {
-    room.spawnTimeout = setTimeout(spawnData, 800);
+    // Spawn competitivo porém menos caótico: entre 700ms e 1300ms
+    const nextSpawn = Math.random() * 600 + 700;
+    room.spawnTimeout = setTimeout(spawnData, nextSpawn);
   }
 }
 
@@ -291,4 +327,5 @@ function broadcast(event, data) {
 }
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🔥 Servidor rodando na porta ${PORT}`));
+const HOST = process.env.HOST || "0.0.0.0";
+server.listen(PORT, HOST, () => console.log(`🔥 Servidor rodando em http://${HOST}:${PORT}`));

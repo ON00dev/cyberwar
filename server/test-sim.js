@@ -1,19 +1,20 @@
 const io = require("socket.io-client");
 
 const ROOM_ID = "5123";
-const MAX_BOTS = 10;
+const MAX_BOTS = 20;
+const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
 
 async function delay(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
 async function startBots(existingDefenders, existingHackers) {
-  let neededDefenders = 5 - existingDefenders;
-  let neededHackers = 5 - existingHackers;
+  let neededDefenders = 10 - existingDefenders;
+  let neededHackers = 10 - existingHackers;
   const totalNeeded = neededDefenders + neededHackers;
 
   if (totalNeeded <= 0) {
-    console.log("[TEST-SIM] Sala já está completa (5v5). Nenhum bot necessário.");
+    console.log("[TEST-SIM] Sala já está completa (10/10). Nenhum bot necessário.");
     return;
   }
 
@@ -26,7 +27,7 @@ async function startBots(existingDefenders, existingHackers) {
 
   for (let i = 0; i < totalNeeded; i++) {
     const botName = `Bot_${Math.random().toString(36).substr(2, 5)}`;
-    const socket = io("http://localhost:3000");
+    const socket = io(SERVER_URL);
     const activeDataIds = new Set();
 
     let desiredRole;
@@ -93,7 +94,7 @@ async function startBots(existingDefenders, existingHackers) {
   }
 }
 
-const checkPlayersSocket = io("http://localhost:3000");
+const checkPlayersSocket = io(SERVER_URL);
 
 checkPlayersSocket.on("room-info", info => {
   if (!info) {

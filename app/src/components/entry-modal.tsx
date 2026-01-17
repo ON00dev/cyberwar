@@ -15,8 +15,8 @@ export function EntryModal({ onJoin, roomInfo }: EntryModalProps) {
   const [username, setUsername] = useState("")
   const [step, setStep] = useState<"name" | "role">("name")
 
-  const isDefendersFull = (roomInfo?.defendersCount ?? 0) >= 5
-  const isHackersFull = (roomInfo?.hackersCount ?? 0) >= 5
+  const isDefendersFull = (roomInfo?.defendersCount ?? 0) >= 10
+  const isHackersFull = (roomInfo?.hackersCount ?? 0) >= 10
 
   const handleContinue = () => {
     if (username.trim() === "") {
@@ -33,7 +33,7 @@ export function EntryModal({ onJoin, roomInfo }: EntryModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,213,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,213,0.02)_1px,transparent_1px)] bg-[size:30px_30px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0, 255, 213, 0.32)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,213,0.02)_1px,transparent_1px)] bg-[size:30px_30px]" />
 
       <div className="relative w-full max-w-md mx-4">
         {/* Terminal window */}
@@ -67,7 +67,7 @@ export function EntryModal({ onJoin, roomInfo }: EntryModalProps) {
                       value={username}
                       onChange={(e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
                       placeholder="Digite seu codinome..."
-                      className="bg-muted border-border focus:border-primary focus:ring-primary/20 font-mono"
+                      className="bg-muted/60 border-border focus:bg-background focus:border-primary focus:ring-primary/20 font-mono select-text"
                       onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && handleContinue()}
                     />
                     <p className="text-xs text-muted-foreground">* Deixe vazio para modo observador</p>
@@ -108,7 +108,7 @@ export function EntryModal({ onJoin, roomInfo }: EntryModalProps) {
                       </div>
                     </div>
                     <div className="text-right">
-                       <span className="text-xs font-mono text-muted-foreground">{roomInfo?.defendersCount ?? 0}/5</span>
+                       <span className="text-xs font-mono text-muted-foreground">{roomInfo?.defendersCount ?? 0}/10</span>
                     </div>
                   </button>
 
@@ -131,7 +131,7 @@ export function EntryModal({ onJoin, roomInfo }: EntryModalProps) {
                       </div>
                     </div>
                     <div className="text-right">
-                       <span className="text-xs font-mono text-muted-foreground">{roomInfo?.hackersCount ?? 0}/5</span>
+                       <span className="text-xs font-mono text-muted-foreground">{roomInfo?.hackersCount ?? 0}/10</span>
                     </div>
                   </button>
 

@@ -12,6 +12,7 @@ interface StatusBarProps {
   isGameOver: boolean
   phase: GamePhase
   playersCount: number
+  maxPlayers: number
 }
 
 function formatTime(seconds: number): string {
@@ -28,6 +29,7 @@ export function StatusBar({
   isGameOver,
   phase,
   playersCount,
+  maxPlayers,
 }: StatusBarProps) {
   let phaseLabel: string
   switch (phase) {
@@ -70,7 +72,9 @@ export function StatusBar({
 
         <div className="flex items-center gap-2 text-muted-foreground">
           <Users className="w-4 h-4" />
-          <span className="font-mono">{playersCount}/10</span>
+          <span className="font-mono">
+            {playersCount}/{maxPlayers}
+          </span>
         </div>
 
         {username && (
