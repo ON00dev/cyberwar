@@ -38,7 +38,7 @@ export interface Player {
   score: number
 }
 
-const GAME_DURATION = 120
+const GAME_DURATION = 240
 const ROOM_ID = "5123"
 const SERVER_URL =
   import.meta.env.VITE_SERVER_URL ||
@@ -248,15 +248,25 @@ export function CyberWarGame() {
 
       socket.emit("lock-data", { dataId })
 
-      // Instead of emitting immediately, open quiz modal
-      const randomQuestion = questions[Math.floor(Math.random() * questions.length)]
+      // Find the clicked item to determine difficulty
+      const item = dataItems.find((d) => d.id === dataId)
+      if (!item) return
+
+      let difficulty: "easy" | "medium" | "hard" = "easy"
+      if (item.type === "normal") difficulty = "easy"
+      else if (item.type === "confidencial") difficulty = "medium"
+      else if (item.type === "critico") difficulty = "hard"
+
+      const availableQuestions = questions.filter((q) => q.difficulty === difficulty)
+
+      // Fallback if no questions found for difficulty (should not happen)
+      const questionPool = availableQuestions.length > 0 ? availableQuestions : questions
+      const randomQuestion = questionPool[Math.floor(Math.random() * questionPool.length)]
+
       setActiveQuestion(randomQuestion)
       setPendingDataId(dataId)
-      
-      // Mark item as "being captured" locally to give feedback?
-      // For now we just open modal.
     },
-    [socket, role, isGameOver],
+    [socket, role, isGameOver, dataItems],
   )
 
   const handleQuizAnswer = (correct: boolean) => {

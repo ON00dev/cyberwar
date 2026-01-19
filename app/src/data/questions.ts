@@ -3,178 +3,295 @@ export interface Question {
   text: string
   options: string[]
   correctIndex: number
+  difficulty: "easy" | "medium" | "hard"
 }
 
 export const questions: Question[] = [
-  // Cloud Computing
+  // --- INICIANTE (DADOS NORMAIS) ---
+  
+  // Cloud Computing - Iniciante
   {
-    id: "cloud-1",
+    id: "cloud-easy-1",
     text: "O que é Computação em Nuvem?",
     options: [
       "Acesso a recursos de TI via internet",
       "Um software para prever o tempo",
       "Um tipo de monitor de alta resolução"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "easy"
   },
   {
-    id: "cloud-2",
+    id: "cloud-easy-2",
     text: "Qual destes é um exemplo de serviço em nuvem?",
     options: [
       "Google Drive",
       "Calculadora do Windows",
       "Paint"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "easy"
   },
   {
-    id: "cloud-3",
+    id: "cloud-easy-3",
     text: "O que significa SaaS?",
     options: [
       "Software as a Service",
       "System as a Server",
       "Storage as a System"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "easy"
+  },
+  {
+    id: "cloud-easy-4",
+    text: "Qual é uma vantagem comum da computação em nuvem?",
+    options: [
+      "Escalar recursos conforme a necessidade",
+      "Ter acesso offline garantido",
+      "Não precisar de internet"
+    ],
+    correctIndex: 0,
+    difficulty: "easy"
   },
   
-  // Big Data
+  // Big Data - Iniciante
   {
-    id: "bigdata-1",
+    id: "bigdata-easy-1",
     text: "O que define Big Data?",
     options: [
       "Volume, Velocidade e Variedade de dados",
       "Um arquivo de texto muito grande",
       "Um banco de dados lento"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "easy"
   },
   {
-    id: "bigdata-2",
+    id: "bigdata-easy-2",
     text: "Qual profissional analisa Big Data?",
     options: [
       "Cientista de Dados",
       "Web Designer",
       "Técnico de Impressora"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "easy"
   },
   
-  // Segurança Digital
+  // Segurança - Iniciante
   {
-    id: "sec-1",
+    id: "sec-easy-1",
     text: "O que é uma senha forte?",
     options: [
       "Mistura de letras, números e símbolos",
       "Sua data de nascimento",
       "O nome do seu cachorro"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "easy"
   },
   {
-    id: "sec-2",
+    id: "sec-easy-2",
     text: "O que é Phishing?",
     options: [
       "Tentativa de roubar dados via e-mail falso",
       "Um software de edição de fotos",
       "Um tipo de vírus de computador antigo"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "easy"
   },
   {
-    id: "sec-3",
+    id: "sec-easy-3",
     text: "O que faz um Antivírus?",
     options: [
       "Detecta e remove softwares maliciosos",
       "Deixa a internet mais rápida",
       "Limpa a tela do computador"
     ],
-    correctIndex: 0
-  },
-  {
-    id: "sec-4",
-    text: "O que é Backup?",
-    options: [
-      "Cópia de segurança dos dados",
-      "Um botão de reiniciar",
-      "A parte de trás do computador"
-    ],
-    correctIndex: 0
-  },
-  {
-    id: "sec-5",
-    text: "O que é Firewall?",
-    options: [
-      "Sistema que bloqueia acessos não autorizados",
-      "Uma parede à prova de fogo",
-      "Um programa para queimar CDs"
-    ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "easy"
   },
 
-  // Cloud extra
+  // --- MÉDIO (DADOS CONFIDENCIAIS) ---
+
+  // Cloud Computing - Médio
   {
-    id: "cloud-4",
-    text: "Qual vantagem comum da computação em nuvem?",
+    id: "cloud-med-1",
+    text: "O que é IaaS?",
     options: [
-      "Escalar recursos conforme a necessidade",
-      "Obrigar uso de apenas um dispositivo",
-      "Impedir acesso remoto a sistemas"
+      "Infrastructure as a Service",
+      "Internet as a Service",
+      "Information as a System"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "medium"
   },
   {
-    id: "cloud-5",
-    text: "Qual modelo de nuvem é compartilhado por várias empresas?",
+    id: "cloud-med-2",
+    text: "Qual modelo de nuvem combina nuvem pública e privada?",
     options: [
-      "Nuvem Pública",
-      "Nuvem Privada",
-      "Nuvem Local"
+      "Nuvem Híbrida",
+      "Nuvem Comunitária",
+      "Nuvem Dedicada"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "medium"
+  },
+  {
+    id: "cloud-med-3",
+    text: "Qual empresa é dona da plataforma Azure?",
+    options: [
+      "Microsoft",
+      "Amazon",
+      "Google"
+    ],
+    correctIndex: 0,
+    difficulty: "medium"
   },
 
-  // Big Data extra
+  // Big Data - Médio
   {
-    id: "bigdata-3",
-    text: "Qual ferramenta é muito usada para processar grandes volumes de dados?",
+    id: "bigdata-med-1",
+    text: "O que é Hadoop?",
     options: [
-      "Apache Spark",
-      "Bloco de Notas",
-      "Gerenciador de Tarefas"
+      "Um framework para processamento distribuído",
+      "Um tipo de banco de dados relacional",
+      "Um sistema operacional para servidores"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "medium"
   },
   {
-    id: "bigdata-4",
-    text: "Por que Big Data é importante para empresas?",
+    id: "bigdata-med-2",
+    text: "O que significa 'Mineração de Dados' (Data Mining)?",
     options: [
-      "Apoiar decisões com base em dados",
-      "Substituir todos os funcionários",
-      "Eliminar a necessidade de segurança"
+      "Descobrir padrões em grandes conjuntos de dados",
+      "Recuperar arquivos deletados",
+      "Criar backups de segurança"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "medium"
   },
 
-  // Segurança extra
+  // Segurança - Médio
   {
-    id: "sec-6",
-    text: "O que é Autenticação em Dois Fatores (2FA)?",
+    id: "sec-med-1",
+    text: "O que é um ataque DDoS?",
     options: [
-      "Uso de duas formas de verificação de identidade",
-      "Uso de duas senhas iguais",
-      "Uso de dois computadores ao mesmo tempo"
+      "Negação de serviço distribuída",
+      "Roubo de dados diretos",
+      "Injeção de código malicioso"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "medium"
   },
   {
-    id: "sec-7",
-    text: "Qual atitude ajuda a evitar golpes online?",
+    id: "sec-med-2",
+    text: "O que é Criptografia?",
     options: [
-      "Desconfiar de links desconhecidos",
-      "Clicar rápido em qualquer promoção",
-      "Compartilhar senhas com amigos"
+      "Técnica para codificar informações",
+      "Um tipo de moeda virtual",
+      "Um software de limpeza"
     ],
-    correctIndex: 0
+    correctIndex: 0,
+    difficulty: "medium"
+  },
+  {
+    id: "sec-med-3",
+    text: "O que significa a sigla VPN?",
+    options: [
+      "Virtual Private Network",
+      "Visual Protocol Network",
+      "Virtual Public Network"
+    ],
+    correctIndex: 0,
+    difficulty: "medium"
+  },
+
+  // --- DIFÍCIL (DADOS CRÍTICOS) ---
+
+  // Cloud Computing - Difícil
+  {
+    id: "cloud-hard-1",
+    text: "O que é 'Serverless Computing'?",
+    options: [
+      "Execução de código sem gerenciar servidores",
+      "Computação sem uso de internet",
+      "Servidores físicos desconectados"
+    ],
+    correctIndex: 0,
+    difficulty: "hard"
+  },
+  {
+    id: "cloud-hard-2",
+    text: "Qual destes é um container orchestrator?",
+    options: [
+      "Kubernetes",
+      "Docker Compose",
+      "VirtualBox"
+    ],
+    correctIndex: 0,
+    difficulty: "hard"
+  },
+
+  // Big Data - Difícil
+  {
+    id: "bigdata-hard-1",
+    text: "O que é o conceito de 'Data Lake'?",
+    options: [
+      "Repositório centralizado de dados brutos",
+      "Um banco de dados estruturado SQL",
+      "Uma planilha Excel gigante"
+    ],
+    correctIndex: 0,
+    difficulty: "hard"
+  },
+  {
+    id: "bigdata-hard-2",
+    text: "Qual a diferença entre ETL e ELT?",
+    options: [
+      "A ordem de transformação e carregamento",
+      "O tipo de banco de dados usado",
+      "A linguagem de programação"
+    ],
+    correctIndex: 0,
+    difficulty: "hard"
+  },
+
+  // Segurança - Difícil
+  {
+    id: "sec-hard-1",
+    text: "O que é um ataque 'Zero Day'?",
+    options: [
+      "Exploração de falha ainda não corrigida",
+      "Um ataque que dura 24 horas",
+      "Um vírus que apaga tudo no dia zero"
+    ],
+    correctIndex: 0,
+    difficulty: "hard"
+  },
+  {
+    id: "sec-hard-2",
+    text: "O que é Ransomware?",
+    options: [
+      "Malware que sequestra dados e pede resgate",
+      "Software que deixa o PC lento",
+      "Programa que rouba senhas de banco"
+    ],
+    correctIndex: 0,
+    difficulty: "hard"
+  },
+  {
+    id: "sec-hard-3",
+    text: "O que é Engenharia Social?",
+    options: [
+      "Manipulação psicológica para obter dados",
+      "Construção de firewalls físicos",
+      "Programação de redes sociais"
+    ],
+    correctIndex: 0,
+    difficulty: "hard"
   }
 ]
