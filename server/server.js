@@ -14,7 +14,7 @@ app.use(express.static(CLIENT_BUILD_PATH));
 
 const ROOM_ID = "5123";
 const MAX_PLAYERS = 20; // Aumentado para suportar mais conexões em simulações
-const GAME_DURATION = 120; // 2 minutos em segundos
+const GAME_DURATION = 240; // 4 minutos em segundos
 const rooms = {
   [ROOM_ID]: {
     players: [],
@@ -83,9 +83,9 @@ io.on("connection", socket => {
 
     updateRoom();
 
-    // Verifica se pode começar (apenas quando sala cheia - 20 jogadores)
-    if (room.players.length >= MAX_PLAYERS) {
-      console.log("🚀 Sala cheia (20 jogadores)! Iniciando partida");
+    // Verifica se pode começar (mínimo 10 jogadores)
+    if (room.players.length >= 10 && !room.gameActive) {
+      console.log(`🚀 Mínimo de jogadores atingido (${room.players.length})! Iniciando partida`);
       startGame();
     }
   });

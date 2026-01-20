@@ -22,7 +22,6 @@ function formatTime(seconds: number): string {
 }
 
 export function StatusBar({
-  status,
   isConnected,
   username,
   timeLeft,
@@ -58,7 +57,7 @@ export function StatusBar({
       <div className="flex items-center gap-3">
         <Activity className="w-4 h-4 text-primary animate-pulse" />
         <span className="text-sm text-foreground tracking-wide">
-          {phaseLabel} — {status}
+          {phaseLabel} {phase === "waiting" && `(Mín: 10 | Max: 20)`}
         </span>
       </div>
 
